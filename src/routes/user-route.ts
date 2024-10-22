@@ -14,6 +14,13 @@ const userRoute = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   - name: User
+ *     description: User management and authentication
+ */
+
+/**
+ * @swagger
  * /api/v1/user/{id}:
  *   get:
  *     summary: Get User Details
