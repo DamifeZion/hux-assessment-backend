@@ -24,6 +24,7 @@ const userRoute = express.Router();
  * /api/v1/user/{id}:
  *   get:
  *     summary: Get User Details
+ *     tags: [User]
  *     description: Retrieve the details of a user by their unique user ID.
  *     parameters:
  *       - in: path
@@ -76,6 +77,7 @@ userRoute.get("/:id", getUserDetails);
  * /api/v1/user/login:
  *   post:
  *     summary: User Login
+ *     tags: [User]
  *     description: Authenticate a user using their email and password, returning a token upon successful authentication.
  *     requestBody:
  *       required: true
@@ -135,6 +137,7 @@ userRoute.post("/login", login);
  * /api/v1/user/register:
  *   post:
  *     summary: Register a New User
+ *     tags: [User]
  *     description: Create a new user account by providing an email, password, and confirmation password.
  *     requestBody:
  *       required: true
@@ -204,6 +207,7 @@ userRoute.post("/register", register);
  * /api/v1/user/activate-account:
  *   post:
  *     summary: Activate User Account
+ *     tags: [User]
  *     description: Validates the user's email using a verification code sent to their email.
  *     requestBody:
  *       required: true
@@ -245,6 +249,7 @@ userRoute.post("/activate-account", validateEmail);
  * /api/v1/user/forgot-password:
  *   post:
  *     summary: Request password reset
+ *     tags: [User]
  *     description: Sends a password reset email to the user's registered email address.
  *     requestBody:
  *       required: true
@@ -285,6 +290,7 @@ userRoute.post("/forgot-password", forgotPassword);
  * /api/v1/user/reset_password/{resetToken}:
  *   put:
  *     summary: Reset user password
+ *     tags: [User]
  *     description: Allows the user to reset their password using a reset token sent via email.
  *     parameters:
  *       - in: path

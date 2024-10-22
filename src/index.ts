@@ -7,7 +7,7 @@ import { errorThrow } from "./utils/error-throw";
 
 /** Route Imports */
 import userRoute from "./routes/user-route";
-import contactRoute from "./routes/contact.route";
+import contactRoute from "./routes/contact-route";
 import { swaggerDocs, swaggerUi } from "./swagger";
 
 /** Express configurations */
