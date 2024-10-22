@@ -8,6 +8,7 @@ import { errorThrow } from "./utils/error-throw";
 /** Route Imports */
 import userRoute from "./routes/user-route";
 import contactRoute from "./routes/contact.route";
+import { swaggerDocs, swaggerUi } from "./swagger";
 
 /** Express configurations */
 const app: Application = express();
@@ -20,13 +21,16 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/** Swagger Documentation */
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 /** Routes */
 app.use(`${CONFIG.API_VERSION}/user`, userRoute);
 app.use(`${CONFIG.API_VERSION}/contact`, contactRoute);
 
 /** Server State */
 app.get("/", (req: Request, res: Response) => {
-   res.send("Api is running...");
+   res.status(201).json("Home GET Request");
 });
 
 /** DB Connection */
