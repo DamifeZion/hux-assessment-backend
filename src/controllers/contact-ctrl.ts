@@ -9,7 +9,9 @@ export const getContacts = async (req: Request, res: Response) => {
    try {
       const user = req.user as UserDocument;
 
-      const contacts = await contactModel.find({ userId: user._id });
+      const contacts = await contactModel
+         .find({ userId: user._id })
+         .select("-userId __v");
 
       responseHandler(res, 200, null, contacts);
    } catch (err) {
