@@ -67,6 +67,9 @@ export const register = async (req: Request, res: Response) => {
       // Generate 6 digit  code
       const verificationCode = await generateSixDigitCode();
 
+      //On every request we want to delete and invalidate the previous token
+      await tokenModel.deleteMany({ email: newUser.email });
+
       // Store the token in DB
       await tokenModel.create({
          token: verificationCode,
@@ -134,7 +137,7 @@ export const login = async (req: Request, res: Response) => {
          return responseHandler(
             res,
             404,
-            "Sorry we could'nt find a user with that username/email address"
+            "Sorry we could'nt find a user with that email address"
          );
       }
 
@@ -151,6 +154,9 @@ export const login = async (req: Request, res: Response) => {
       if (!existingUser.emailActive) {
          // Generate 6 digit code
          const verificationCode = await generateSixDigitCode();
+
+         //On every request we want to delete and invalidate the previous token
+         await tokenModel.deleteMany({ email: existingUser.email });
 
          // store the token in DB
          await tokenModel.create({
@@ -199,7 +205,7 @@ export const login = async (req: Request, res: Response) => {
          CONFIG.USER_SESSION_EXPIRATION
       );
 
-      responseHandler(res, 200, "Welcome back!", {
+      responseHandler(res, 200, `Welcome back! ${existingUser.email}`, {
          token: sessionToken,
          email: existingUser.email,
       });
@@ -246,7 +252,7 @@ export const validateEmail = async (req: Request, res: Response) => {
       responseHandler(
          res,
          200,
-         "Your account has been activated successfully. Welcome aboard!"
+         "Your account has been activated successfully. Please sign in to continue"
       );
    } catch (err) {
       return errorThrow(err, res);
@@ -258,11 +264,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       const { email } = req.body;
 
       if (!email) {
-         return responseHandler(
-            res,
-            404,
-            "Please enter account username/email address"
-         );
+         return responseHandler(res, 404, "Please enter account email address");
       }
 
       const existingUser = await userModel.findOne({ email });
@@ -281,6 +283,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
          existingUser.email,
          CONFIG.TOKEN_MODEL_EXPIRATION
       );
+
+      //On every request we want to delete and invalidate the previous token
+      await tokenModel.deleteMany({ email: existingUser.email });
 
       // Here we send them a email with token which they can click on the link to change their account password within 3hrs
       await tokenModel.create({
@@ -306,7 +311,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 						<button style="
 						background-color: #4CAF50; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block;
 						font-size: 20px; margin: 4px 2px;	cursor: pointer; border-radius: 12px;">
-							<a href="${CONFIG.CLIENT_BASE_URL}/${CONFIG.CLIENT_RESET_PASSWORD}/${resetToken}" style=" color: white; text-decoration: none;">
+							<a href="${CONFIG.CLIENT_BASE_URL}/${resetToken}/${CONFIG.CLIENT_RESET_PASSWORD}" style=" color: white; text-decoration: none;">
 									Reset Password
 							</a>
 						</button>
@@ -344,7 +349,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       const { payload } = tokenPayload;
 
       // Delete the reset token from DB
-      const tokenDoc = await tokenModel.findOneAndDelete({ email: payload });
+      const tokenDoc = await tokenModel.findOne({ email: payload });
 
       // Break if there is no reset token or if there is no user
       const existingUser = await userModel.findOne({ email: payload });
@@ -352,6 +357,9 @@ export const resetPassword = async (req: Request, res: Response) => {
       if (!existingUser || !tokenDoc) {
          return responseHandler(res, 401, "Unauthorised request.");
       }
+
+      // Delete the tokenDoc after successful validation
+      await tokenDoc.deleteOne();
 
       // validate fields
       if (!password) {
