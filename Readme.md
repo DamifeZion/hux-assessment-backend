@@ -24,7 +24,7 @@ This is the backend solution for the Hux Ventures Fullstack Developer Assessment
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/hux-assessment-backend.git
+git clone https://github.com/DamifeZion/hux-assessment-backend.git
 cd hux-assessment-backend
 ```
 
