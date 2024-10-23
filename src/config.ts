@@ -9,7 +9,7 @@ function getEnvVar(key: string, defaultValue?: string): string {
    return value;
 }
 
-const PORT = getEnvVar("PORT", "8080");
+const PORT = getEnvVar("PORT", "5000");
 export const CONFIG = {
    DB_CONN: getEnvVar("DB_CONN"),
    PORT,
