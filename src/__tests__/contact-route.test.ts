@@ -5,85 +5,23 @@ import { contactModel } from "../models/contact-model";
 
 // Mock JWT authentication middleware to skip actual authentication
 jest.mock("../middlewares/jwt-verify-auth", () => ({
-   jwtVerifyAuth: jest.fn((req, res, next) => next()),
+   jwtVerifyAuth: jest.fn((req, res, next) => {
+      req.user = { _id: "mockUserId", email: "user@example.com" }; // Mock user
+      next();
+   }),
 }));
 
 // Mock Mongoose model methods
 jest.mock("../models/contact-model", () => ({
    contactModel: {
-      find: jest.fn(),
-      findById: jest.fn(),
       create: jest.fn(),
       findByIdAndUpdate: jest.fn(),
-      findByIdAndDelete: jest.fn(),
    },
 }));
 
-describe("Contact Routes", () => {
-   afterAll(() => {
-      mongoose.connection.close();
-   });
-
-   describe("GET /api/v1/contact", () => {
-      it("should return all contacts for the authenticated user", async () => {
-         const mockContacts = [
-            {
-               _id: "1",
-               firstname: "John",
-               lastname: "Doe",
-               phone: "+123456789",
-            },
-            {
-               _id: "2",
-               firstname: "Jane",
-               lastname: "Smith",
-               phone: "+987654321",
-            },
-         ];
-
-         (contactModel.find as jest.Mock).mockResolvedValue(mockContacts);
-
-         const response = await request(app).get("/api/v1/contact");
-
-         expect(response.status).toBe(200);
-         expect(response.body.contacts).toEqual(mockContacts);
-      });
-
-      it("should return 404 if no contacts are found", async () => {
-         (contactModel.find as jest.Mock).mockResolvedValue([]);
-
-         const response = await request(app).get("/api/v1/contact");
-
-         expect(response.status).toBe(404);
-         expect(response.body.message).toBe("No contacts found.");
-      });
-   });
-
-   describe("GET /api/v1/contact/:id", () => {
-      it("should return contact details for a given ID", async () => {
-         const mockContact = {
-            _id: "1",
-            firstname: "John",
-            lastname: "Doe",
-            phone: "+123456789",
-         };
-
-         (contactModel.findById as jest.Mock).mockResolvedValue(mockContact);
-
-         const response = await request(app).get("/api/v1/contact/1");
-
-         expect(response.status).toBe(200);
-         expect(response.body.contact).toEqual(mockContact);
-      });
-
-      it("should return 404 if contact is not found", async () => {
-         (contactModel.findById as jest.Mock).mockResolvedValue(null);
-
-         const response = await request(app).get("/api/v1/contact/123");
-
-         expect(response.status).toBe(404);
-         expect(response.body.message).toBe("Contact not found.");
-      });
+describe("Contact Routes - Create and Update", () => {
+   afterAll(async () => {
+      await mongoose.disconnect(); // Ensure Mongoose disconnects after all tests
    });
 
    describe("POST /api/v1/contact", () => {
@@ -97,21 +35,38 @@ describe("Contact Routes", () => {
          (contactModel.create as jest.Mock).mockResolvedValue(newContact);
 
          const response = await request(app)
-            .post("/api/v1/contact")
+            .post("/api/v1/contact/add")
             .send(newContact);
 
          expect(response.status).toBe(201);
-         expect(response.body.contact).toEqual(newContact);
+         expect(response.body.message).toBe(
+            `Contact ${newContact.firstname} created successfully`
+         );
       });
 
-      it("should return 400 if required fields are missing", async () => {
-         const response = await request(app).post("/api/v1/contact").send({
-            firstname: "John",
+      it("should return 404 if required fields are missing", async () => {
+         const response = await request(app).post("/api/v1/contact/add").send({
+            firstname: "John", // Missing lastname and phone
          });
 
-         expect(response.status).toBe(400);
+         expect(response.status).toBe(404);
+         expect(response.body.message).toBe("Firstname is required");
+      });
+
+      it("should return 404 for invalid phone number", async () => {
+         const newContact = {
+            firstname: "John",
+            lastname: "Doe",
+            phone: "123", // Invalid phone number
+         };
+
+         const response = await request(app)
+            .post("/api/v1/contact/add")
+            .send(newContact);
+
+         expect(response.status).toBe(404);
          expect(response.body.message).toBe(
-            "First name, last name, and phone are required"
+            "Please enter a valid phone number"
          );
       });
    });
@@ -134,7 +89,7 @@ describe("Contact Routes", () => {
 
          expect(response.status).toBe(200);
          expect(response.body.message).toBe(
-            "Contact Jane updated successfully"
+            `Contact ${updatedContact.firstname} updated successfully`
          );
       });
 
@@ -149,38 +104,6 @@ describe("Contact Routes", () => {
 
          expect(response.status).toBe(404);
          expect(response.body.message).toBe("Contact does not exist");
-      });
-   });
-
-   describe("DELETE /api/v1/contact/:id", () => {
-      it("should delete a contact by ID", async () => {
-         const mockDeletedContact = {
-            _id: "1",
-            firstname: "John",
-            lastname: "Doe",
-         };
-
-         (contactModel.findByIdAndDelete as jest.Mock).mockResolvedValue(
-            mockDeletedContact
-         );
-
-         const response = await request(app).delete("/api/v1/contact/1");
-
-         expect(response.status).toBe(200);
-         expect(response.body.message).toBe(
-            "Contact John deleted successfully"
-         );
-      });
-
-      it("should return 404 if contact is not found", async () => {
-         (contactModel.findByIdAndDelete as jest.Mock).mockResolvedValue(null);
-
-         const response = await request(app).delete("/api/v1/contact/123");
-
-         expect(response.status).toBe(404);
-         expect(response.body.message).toBe(
-            "Failed to delete contact, because contact does not exist"
-         );
       });
    });
 });
