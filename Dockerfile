@@ -22,4 +22,4 @@ RUN chmod +x start.sh
 EXPOSE 5000
 
 # Run the start.sh script
-CMD ["./start.sh"]
+CMD ["bash", "./start.sh"]

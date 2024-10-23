@@ -17,7 +17,10 @@ const swaggerOptions = {
       servers: [
          {
             url: CONFIG.SERVER_URL,
-            description: "Development server",
+            description:
+               process.env.NODE_ENV === "production"
+                  ? "Production server"
+                  : "Development server",
          },
       ],
    },
