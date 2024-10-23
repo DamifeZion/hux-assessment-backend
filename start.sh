@@ -1,23 +1,18 @@
 #!/usr/bin/env bash
 
-# Check if the environment is production
-if [ "$NODE_ENV" = "production" ]; then
-    echo "Running in production mode"
+# We use this script because bcrypt fails to work on render unless this script is used
 
-    # Install new dependencies if any
-    npm install
+# Install new dependencies if any
+npm install
 
-    # Uninstall the current bcrypt modules
-    npm uninstall bcrypt
+# Uninstall the current bcrypt modules
+npm uninstall bcrypt
 
-    # Install the bcrypt modules for the current environment
-    npm install bcrypt
+# Install the bcrypt modules for the current environment
+npm install bcrypt
 
-    # Build the TypeScript code
-    npm run build
-else
-    echo "Not running in production mode, skipping npm install, build and bcrypt operations"
-fi
+# Build the TypeScript code
+npm run build
 
 echo "Starting API server"
 

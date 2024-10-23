@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the application to the container
 COPY . .
 
+# Compile TypeScript to JavaScript
+RUN npm run build
+
 # Make the start.sh file executable
 RUN chmod +x start.sh
 
