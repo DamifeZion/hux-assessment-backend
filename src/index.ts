@@ -46,3 +46,4 @@ mongoose
    .catch((err: unknown) => {
       errorThrow(err);
    });
+export { app };

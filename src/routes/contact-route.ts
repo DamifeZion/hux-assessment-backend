@@ -1,5 +1,6 @@
 import express from "express";
 import {
+   createContact,
    deleteContact,
    editContact,
    getContactDetails,
@@ -11,7 +12,6 @@ const contactRoute = express.Router();
 
 // Protect route from unAuthenticated users
 contactRoute.use(jwtVerifyAuth);
-
 
 /**
  * @swagger
@@ -64,6 +64,66 @@ contactRoute.use(jwtVerifyAuth);
  *                   example: "Internal server error."
  */
 contactRoute.get("/", getContacts);
+
+/**
+ * @swagger
+ * /api/v1/contact/add:
+ *   post:
+ *     summary: Create a new contact
+ *     description: Allows the authenticated user to create a new contact by providing the required details.
+ *     tags: [Contact]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstname:
+ *                 type: string
+ *                 example: "John"
+ *                 description: The first name of the contact.
+ *               lastname:
+ *                 type: string
+ *                 example: "Doe"
+ *                 description: The last name of the contact.
+ *               phone:
+ *                 type: string
+ *                 example: "+123456789"
+ *                 description: A valid phone number of the contact.
+ *     responses:
+ *       201:
+ *         description: Contact created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Contact John created successfully"
+ *       404:
+ *         description: Missing required fields or invalid phone number.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Firstname is required"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+contactRoute.post("/add", createContact);
 
 /**
  * @swagger

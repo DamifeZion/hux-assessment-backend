@@ -3,6 +3,7 @@ import { errorThrow } from "../utils/error-throw";
 import { UserDocument } from "../models/user-model";
 import { contactModel } from "../models/contact-model";
 import { responseHandler } from "../utils/responseHandler";
+import validator from "validator";
 
 export const getContacts = async (req: Request, res: Response) => {
    try {
@@ -13,6 +14,40 @@ export const getContacts = async (req: Request, res: Response) => {
       responseHandler(res, 200, null, contacts);
    } catch (err) {
       errorThrow(err, res);
+   }
+};
+
+export const createContact = async (req: Request, res: Response) => {
+   try {
+      const user = req.user as UserDocument;
+      const { firstname, lastname, phone } = req.body;
+
+      await contactModel.create({
+         firstname,
+         lastname,
+         phone,
+         userId: user._id,
+      });
+
+      if (!firstname) {
+         return responseHandler(res, 404, "Firstname is required");
+      }
+
+      if (!lastname) {
+         return responseHandler(res, 404, "Firstname is required");
+      }
+
+      if (!phone) {
+         return responseHandler(res, 404, "Firstname is required");
+      }
+
+      if (!validator.isMobilePhone(phone)) {
+         return responseHandler(res, 404, "Please enter a valid phone number");
+      }
+
+      responseHandler(res, 201, `Contact ${firstname} created successfully`);
+   } catch (err) {
+      return errorThrow(err, res);
    }
 };
 
@@ -28,7 +63,7 @@ export const getContactDetails = async (req: Request, res: Response) => {
 
       return responseHandler(res, 200, "Contact details found", contact);
    } catch (err) {
-      errorThrow(err, res);
+      return errorThrow(err, res);
    }
 };
 
@@ -59,7 +94,7 @@ export const editContact = async (req: Request, res: Response) => {
          `Contact ${contact?.firstname} updated successfully`
       );
    } catch (err) {
-      errorThrow(err, res);
+      return errorThrow(err, res);
    }
 };
 
@@ -83,6 +118,6 @@ export const deleteContact = async (req: Request, res: Response) => {
          `Contact ${deletedContact?.firstname} deleted successfully`
       );
    } catch (err) {
-      errorThrow(err, res);
+      return errorThrow(err, res);
    }
 };
