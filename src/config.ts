@@ -22,7 +22,7 @@ export const CONFIG = {
    CLIENT_RESET_PASSWORD: getEnvVar("CLIENT_RESET_PASSWORD"),
    COMPANY_NAME: "Contactly",
    VERSION_NO: "1.0.0",
-   SERVER_URL: "http://localhost:5000",
+   SERVER_URL: "https://hux-assessment-backend-snrr.onrender.com",
    TOKEN_MODEL_EXPIRATION: "3h",
    USER_SESSION_EXPIRATION: "7d",
 };
