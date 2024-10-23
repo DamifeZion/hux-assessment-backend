@@ -19,7 +19,7 @@ RUN npm run build
 # Make the start.sh file executable
 RUN chmod +x start.sh
 
-EXPOSE 8080
+EXPOSE 5000
 
 # Run the start.sh script
 CMD ["./start.sh"]
