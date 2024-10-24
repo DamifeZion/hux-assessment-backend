@@ -4,6 +4,7 @@ import { UserDocument } from "../models/user-model";
 import { contactModel } from "../models/contact-model";
 import { responseHandler } from "../utils/responseHandler";
 import validator from "validator";
+import mongoose from "mongoose";
 
 export const getContacts = async (req: Request, res: Response) => {
    try {
@@ -11,7 +12,7 @@ export const getContacts = async (req: Request, res: Response) => {
 
       const contacts = await contactModel
          .find({ userId: user._id })
-         .select("-userId __v");
+         .select("-userId -__v");
 
       responseHandler(res, 200, null, contacts);
    } catch (err) {
@@ -23,13 +24,6 @@ export const createContact = async (req: Request, res: Response) => {
    try {
       const user = req.user as UserDocument;
       const { firstname, lastname, phone } = req.body;
-
-      await contactModel.create({
-         firstname,
-         lastname,
-         phone,
-         userId: user._id,
-      });
 
       if (!firstname) {
          return responseHandler(res, 404, "Firstname is required");
@@ -47,6 +41,24 @@ export const createContact = async (req: Request, res: Response) => {
          return responseHandler(res, 404, "Please enter a valid phone number");
       }
 
+      //Check if the phone already exist;
+      const existingPhone = await contactModel.findOne({ phone });
+
+      if (existingPhone) {
+         return responseHandler(
+            res,
+            404,
+            `The phone number ${phone} is already associated with contact ${existingPhone.firstname} ${existingPhone.lastname}`
+         );
+      }
+
+      await contactModel.create({
+         firstname,
+         lastname,
+         phone,
+         userId: user._id,
+      });
+
       responseHandler(res, 201, `Contact ${firstname} created successfully`);
    } catch (err) {
       return errorThrow(err, res);
@@ -57,7 +69,11 @@ export const getContactDetails = async (req: Request, res: Response) => {
    try {
       const { id } = req.params;
 
-      const contact = await contactModel.findById({ _id: id });
+      // Check if the id is a valid MongoDB ObjectId
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+         return responseHandler(res, 400, "Invalid contact ID");
+      }
+      const contact = await contactModel.findById(id).select("-userId");
 
       if (!contact) {
          return responseHandler(res, 404, "Contact not found");
@@ -74,8 +90,13 @@ export const editContact = async (req: Request, res: Response) => {
       const { id } = req.params;
       const { firstname, lastname, phone } = req.body;
 
+      // Check if the id is a valid MongoDB ObjectId
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+         return responseHandler(res, 400, "Invalid contact ID");
+      }
+
       const contact = await contactModel.findByIdAndUpdate(
-         { _id: id },
+         id,
          {
             firstname,
             lastname,
@@ -104,7 +125,11 @@ export const deleteContact = async (req: Request, res: Response) => {
    try {
       const { id } = req.params;
 
-      const deletedContact = await contactModel.findByIdAndDelete({ _id: id });
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+         return responseHandler(res, 400, "Invalid contact ID");
+      }
+
+      const deletedContact = await contactModel.findByIdAndDelete(id);
 
       if (!deletedContact) {
          return responseHandler(
