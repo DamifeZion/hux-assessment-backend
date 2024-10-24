@@ -47,6 +47,8 @@ export const createContact = async (req: Request, res: Response) => {
          userId: user._id,
       });
 
+      console.log(existingPhone)
+
       if (existingPhone) {
          return responseHandler(
             res,
