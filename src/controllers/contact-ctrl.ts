@@ -41,8 +41,11 @@ export const createContact = async (req: Request, res: Response) => {
          return responseHandler(res, 404, "Please enter a valid phone number");
       }
 
-      //Check if the phone already exist;
-      const existingPhone = await contactModel.findOne({ phone });
+      //Check if the phone already exist for that user;
+      const existingPhone = await contactModel.findOne({
+         phone,
+         userId: user._id,
+      });
 
       if (existingPhone) {
          return responseHandler(
